@@ -1,0 +1,29 @@
+.card {
+  border-radius:0.5em;
+  border:0.2em solid black;
+  margin-right: 10px;
+}
+
+#logo {
+  margin-left: 5em;
+  height: 40px;
+  position:fixed;
+}
+
+#hit {
+  float: left;
+}
+
+#stay {
+  float: left;
+  margin-left: 5px;
+}
+
+#sign_out {
+  float: left;
+  margin-left: 5px;
+}
+
+#play_again {
+  float: left;
+}

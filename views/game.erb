@@ -1,0 +1,73 @@
+<% if session[:player_hand].size ==2 && @show_hit_stay_hide_dealer_card%>
+<h2>Welcome to Black Sinatra!<h2>
+<% end %>
+
+<% if @winner %> <!Someone won>
+  <h4>Would you like to play again?</h4>
+  <!button/option to play new game (get /bet)>
+  <a href='/reset' id='play_again' class = 'btn btn-success'>Yes give me another game!</a>
+  <a href='/set_name' id='sign_out' class = 'btn btn-danger'>No thanks.</a>
+  </br>
+<% end %>
+
+<p><h5>
+  <div>
+    </br>
+    <h4><%=session[:name]%>'s cards: (totalling <%= total(session[:player_hand]) %>)</h4>
+    
+      <% session[:player_hand].each do |card| %>
+        <%=card_display(card)%>
+      <% end %>
+  </div>
+</br></h5></p>
+
+<% if @show_hit_stay_hide_dealer_card %> <!Player's turn>
+  <div><%= session[:name] %>'s Turn
+    </br>
+    <div>Would you like to:</div>
+    <form action='/game/player/hit' method='post' id="hit">
+      <input value='Hit' type='submit' class='btn btn-success'>
+    </form>
+    <form action='/game/player/stay' method='post' id="stay">
+      <input value = 'Stay' type='submit' class='btn btn-warning'>
+    </form>
+    </br>
+  </div>
+  </br>
+
+<%elsif !@winner %> <!Dealer's turn>
+  <div>It's now the dealer's turn. Dealer currently has a total of <%= @dealer_total=total(session[:dealer_hand])%>!</div>
+    <!logic for deciding what dealer does next - Note: This logic was intentionally put in view instead of controller to allow simultaneous knowledge of both the player end of turn, and the dealer's start of turn options, within the one action>
+    <% if @dealer_total<DEALER_STAY_VALUE %>
+      <div>The dealer needs to 'hit'.
+        <form action='/game/dealer/hit' method='post' id="dealer">
+          <input value="Show the dealer's next card" type='submit' class='btn btn-info'>
+        </form>
+      </div>
+    <% else %>
+      <% if @dealer_total<BLACKJACK %>
+        Dealer is staying.
+      <% elsif @dealer_total==BLACKJACK %>
+        Dealer has blackjack!
+      <% else %>
+        Oh no...Dealer is bust!
+      <% end %>
+      </br>
+      </br>
+      <form action='/game/winner' method='post'>
+        <input value="Click to see who won!" type='submit' class='btn btn-danger'>
+      </form>
+    <% end %>
+<% end %>
+
+<div>
+  <h4>Dealer's cards:</h4>
+    <% session[:dealer_hand].each_with_index do |card, i| %>
+      <% if @show_hit_stay_hide_dealer_card && i==0 %>
+        <img src='/images/cards/cover3.jpg' class='card'/>
+      <% else %>
+        <%=card_display(card)%>
+      <% end %>
+    <% end %>
+</div>
+</br>

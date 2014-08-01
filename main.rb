@@ -51,7 +51,7 @@ get '/' do
 end
 
 get '/set_name' do
-  session[:name]=''
+  session[:name]=nil
   erb :set_name
 end
 

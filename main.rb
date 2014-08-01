@@ -3,10 +3,11 @@ require 'sinatra'
 require 'sinatra/reloader' if development?
 
 set :sessions, true
-#session holds: name, deck, player_hand, dealer_hand
+#session holds: name, deck, player_hand, dealer_hand, player_amount, bet_amount
 
 BLACKJACK = 21
 DEALER_STAY_VALUE = 17
+INITIAL_AMOUNT = 500
 
 helpers do
   def total(cards)
@@ -50,6 +51,7 @@ get '/' do
 end
 
 get '/set_name' do
+  session[:name]=''
   erb :set_name
 end
 
@@ -62,17 +64,32 @@ post '/set_name' do
     @error ="You have entered a very strange name. Please enter your name using only letters."
     halt erb :set_name
   end
+  session[:player_amount]=INITIAL_AMOUNT
   redirect '/bet'
 end
 
 get '/bet' do
-  #get bet input :form
-  redirect '/game'
+  if session[:player_amount] == 0
+    @no_money = true
+  end
+  if ( !session[:player_amount] || !session[:name])
+    halt redirect '/set_name'
+  end
+  session[:bet_amount]=nil
+  erb :bet
 end
 
 post '/bet' do
-  #store bet amount, and money leftover (check valid ie have the money)
-  #redirect to game
+  session[:bet_amount]=params[:bet_amount].to_i
+  if session[:player_amount] == 0
+    session[:player_amount] = session[:bet_amount]
+  end
+  if (session[:bet_amount] <= 0) || (session[:bet_amount] > session[:player_amount])
+    @error = "You must enter a value between 1 and the total amount you have."
+    erb :bet
+  else
+  redirect '/game'
+  end
 end
 
 get '/game' do
@@ -102,21 +119,21 @@ post '/game/player/hit' do
   end
   
   if @player_total == BLACKJACK
-    @error="Congratulations #{session[:name]}, you have a total of 21 Blackjack!"
+    @game_msg="Congratulations #{session[:name]}, you have a total of 21 Blackjack!"
   elsif @player_total > BLACKJACK
-    @error="Sorry #{session[:name]}, your total of #{@player_total} is too high!" +
+    @game_msg="Sorry #{session[:name]}, your total of #{@player_total} is too high!" +
       " You are bust!"
   end
-  if @error
+  if @game_msg
     @show_hit_stay_hide_dealer_card = false
   end
-  erb :game
+  erb :game, layout: false
 end
 
 post '/game/player/stay' do
   @show_hit_stay_hide_dealer_card = false
-  @success = "You have chosen to stay."
-  erb :game
+  @game_msg = "You have chosen to stay."
+  erb :game, layout: false
 end
 
 get '/reset' do
@@ -132,7 +149,7 @@ post '/game/dealer/hit' do
   
   session[:dealer_hand]<<session[:deck].pop
 
-  erb :game
+  erb :game, layout: false
 end
 
 post '/game/winner' do
@@ -144,20 +161,22 @@ post '/game/winner' do
 
   if (@player_total > BLACKJACK && @dealer_total > BLACKJACK)
     @success = "Both #{session[:name]} and the dealer are bust. This game is a tie!"
-    #give player back their bet amount
   elsif @dealer_total > BLACKJACK
     @success = "Dealer is bust. #{session[:name]} wins with a total of #{@player_total}!"
+    session[:player_amount]+=session[:bet_amount]
   elsif @player_total > BLACKJACK
     @success = "#{session[:name]} is bust. The dealer wins with a total of #{@dealer_total}!"
+    session[:player_amount]-=session[:bet_amount]
   elsif @player_total == @dealer_total
     @success = "Both #{session[:name]} and the dealer have a total of #{@player_total}. This game is a tie!"
-    #give player back their bet amount
   elsif @player_total > @dealer_total
     @success = "#{session[:name]} wins with a total of #{@player_total}!"
+    session[:player_amount]+=session[:bet_amount]
   else
     @success = "Sorry #{session[:name]}, you lose this game. The dealer has beaten you with a total of #{@dealer_total}."
+    session[:player_amount]-=session[:bet_amount]
   end
 
-  #store won amount (if any)
+  @success << " #{session[:name]} now has $#{session[:player_amount]}."
   erb :game
 end

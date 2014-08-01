@@ -1,0 +1,37 @@
+<h3><%=session[:name]%> has $<%=session[:player_amount]%>!</h3>
+
+<% if !@no_money %>
+  <p><h5>How much would you like to bet for this hand <%=session[:name]%>?</h5>
+    <form class='form-horizontal' action='/bet' method='post' id='bet_form'>
+      <div><input type='text' placeholder='Enter bet amount' name = 'bet_amount' id='bet_amount_textbox'/></div>
+      <div><input type='submit' class = 'btn btn-warning'/></div>
+    </form>
+  </p>
+<% else %>
+  <h3>You have no more money left to bet with!</h3>
+  <h5>Would you like to:</h5>
+  <div>
+    <form class='gamble' action='/bet' method='post'>
+      <input type='text' value=10  name = 'bet_amount' class = 'invisible'/>
+      <input type='submit' class = 'btn btn-success'  value='Beg a friend for some money to bet with?' />
+    </form>
+
+    <form class='gamble' action='/bet' method='post'>
+      <input type='text' value=50  name = 'bet_amount' class = 'invisible'/>
+      <input type='submit' class = 'btn btn-primary'  value='Sell your watch for $50 to bet this hand?' />
+    </form>
+
+    <form class='gamble' action='/bet' method='post'>
+      <input type='text' value=300  name = 'bet_amount' class = 'invisible'/>
+      <input type='submit' class = 'btn btn-info'  value='Sell your smart phone for $300 to bet this hand?' />
+    </form>
+
+    <form class='gamble' action='/bet' method='post'>
+      <input type='text' value=500  name = 'bet_amount' class = 'invisible'/>
+      <input type='submit' class = 'btn btn-danger'  value='Get a $500 under the table loan?' />
+    </form>
+  </div>
+  <div>
+    <a href='/set_name' class = 'btn btn-inverse'>Leave the game</a>
+  </div>
+<% end %>

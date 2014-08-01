@@ -27,3 +27,16 @@
 #play_again {
   float: left;
 }
+
+#amounts {
+  color: #00007C;
+}
+
+#bet_amount_textbox {
+  margin-bottom: 10px;
+}
+
+.invisible {
+  width: 0px;
+  float: right;
+}
